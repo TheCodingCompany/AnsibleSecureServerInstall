@@ -1,0 +1,161 @@
+
+{% if enable_php %}
+  include /etc/nginx/php-fpm.conf;
+{% endif %}
+
+server {
+
+    listen 80 default_server;
+    server_name _;
+    
+    access_log      /var/log/{{hostname}}.access.log;
+    error_log       /var/log/{{hostname}}.error_log;
+
+    root /home/domains/{{hostname}}/www;
+    index index.php;
+
+    include /etc/nginx/extra-security.conf;
+
+    location ~ ^/(sitemap.xml)
+    {
+        access_log on;
+    }
+    location ~ ^/(robots.txt)
+    {
+        access_log on;
+    }
+    location ~ ^/(google07fce8f85b7b5910.html)
+    {
+        access_log on;
+    }
+
+    {% if enable_ssl %}
+
+      return 301 https://$host$request_uri$query_string;
+
+    {% endif %}
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   html;
+    }
+
+    location /
+    {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location /assets
+    {
+        expires max;
+    }
+
+    {% if enable_php %}
+    location ~ \.php$ {
+            fastcgi_intercept_errors        on;
+            try_files                       $uri /index.php =404;
+            fastcgi_split_path_info         ^(.+\.php)(.*)$;
+            fastcgi_pass                    php-fpm-prod;
+            fastcgi_index                   index.php;
+            fastcgi_param                   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include                         fastcgi_params;
+    }
+    {% endif %}
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+            expires max;
+            log_not_found off;
+    }
+
+    location = /robots.txt
+    {
+    }
+    location = /sitemap.xml
+    {
+    }
+    location = /favicon.ico
+    {
+    }
+    location ~ /\. {
+        deny all;
+    }
+}
+
+server {
+  
+        {% if enable_ssl %}
+          listen       443 ssl default_server http2;
+        {% else %}
+          listen 80;
+        {% endif %}
+        
+        server_name  {{hostname}};
+
+        include /etc/nginx/extra-security.conf;
+
+        {% if enable_ssl %}
+          include /etc/nginx/ssl_params.conf;
+          ssl_certificate /etc/nginx/ssl/{{ssl_certificate}};
+          ssl_trusted_certificate /etc/nginx/ssl/{{ssl_trusted_certificate}};
+          ssl_certificate_key /etc/nginx/ssl/{{ssl_certificate_key}};
+        {% endif %}
+
+        access_log      /var/log/{{hostname}}.access.log;
+        error_log       /var/log/{{hostname}}.error_log;
+
+        root /home/domains/{{hostname}}/www;
+        index index.php;
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        location /
+        {
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        location /assets
+        {
+            expires max;
+        }
+
+        {% if enable_php %}
+        location ~ \.php$ {
+                fastcgi_intercept_errors        on;
+                try_files                       $uri /index.php =404;
+                fastcgi_split_path_info         ^(.+\.php)(.*)$;
+                fastcgi_pass                    php-fpm-prod;
+                fastcgi_index                   index.php;
+                fastcgi_param                   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include                         fastcgi_params;
+        }
+        {% endif %}
+
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                expires max;
+                log_not_found off;
+        }
+
+        location = /robots.txt
+        {
+        }
+        location = /sitemap.xml
+        {
+        }
+        location = /favicon.ico
+        {
+        }
+        location ~ /\. {
+            deny all;
+        }
+}

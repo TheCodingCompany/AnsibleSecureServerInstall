@@ -1,0 +1,58 @@
+## YAML Template.
+---
+- name: Set kernel options
+  template: src=sysctl.conf.j2 dest=/etc/sysctl.conf
+  
+- name: Load kernel options 
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 0
+    sysctl_set: yes
+    reload: yes
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Get EPEL REPO
+  yum:
+    name: epel-release
+    state: present
+    
+- name: Install MariaDB server REPO
+  yum_repository:
+    name: "MariaDB {{mariadb_version}}"
+    description: MariaDB repository
+    baseurl: http://yum.mariadb.org/$releasever/centos$releasever-$basearch
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+    enabled: yes
+
+- name: Install REMI release REPO
+  yum_repository:
+    name: "Remi RPM repository"
+    description: Remi repository
+    mirrorlist: "http://rpms.remirepo.net/enterprise/{{centos_version}}/remi/mirror"
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-remi
+
+- name: Install REMI PHP72
+  yum_repository:
+    name: "Remi PHP72 repository"
+    description: Remi PHP7.2 repo
+    mirrorlist: http://cdn.remirepo.net/enterprise/{{centos_version}}/php72/mirror
+    enabled: yes
+    gpgcheck: yes
+
+- name: Yum clean all
+  command: yum clean all
+  run_once: true
+  args:
+    warn: no
+
+- name: Install all updates
+  run_once: true
+  yum:
+      name: '*'
+      state: latest      

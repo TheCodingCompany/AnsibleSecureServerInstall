@@ -1,0 +1,19 @@
+## YAML Template.
+---
+- name: CentOS 7 secure server install with Webserver and PHP-FPM + SSL optional
+  hosts: server
+  remote_user: root
+  vars:
+    hostname: <fill_in_your_hostname>
+    ssl_certificate: <your_ssl_certificate>.bundle
+    ssl_trusted_certificate: <ca_root_certificate>.trust
+    ssl_certificate_key: <certificate_private_key>.key
+    centos_version: 7
+    enable_php: true
+    enable_ssl: false
+
+  roles:
+    - common
+    - firewall
+    - webserver  
+    

@@ -1,0 +1,70 @@
+## YAML Template.
+---
+- name: Install nGinx
+  yum:
+    name: nginx
+    state: latest
+    
+- name: Set proper nginx.conf
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+
+- name: Create nginx Cache store
+  file:
+    state: directory
+    path: /var/nginx/cache_store
+    owner: nginx
+    group: root
+    
+- name: Create SSL certificate folder
+  file:
+    state: directory
+    path: /etc/nginx/ssl
+    owner: nginx
+    group: root
+
+- name: OWASP Secure Headers
+  template: src=extra-security.j2 dest=/etc/nginx/extra-security.conf
+
+- name: SSL parameters
+  template: src=ssl_params.conf.j2 dest=/etc/nginx/ssl_params.conf
+
+- name: Install PHP-FPM
+  yum:
+    name: ["php-common", "php-fpm", "php-mcrypt", "php-pdo"]
+    state: latest
+  when: enable_php  
+
+- name: Configure PHP-FPM
+  copy:
+    src: templates/php-fpm.conf
+    dest: /etc/php-fpm.d/www.conf
+  when: enable_php
+
+- name: Configure nGinx PHP-FPM
+  template:
+    src: nginx-php-fpm.j2
+    dest: /etc/nginx/php-fpm.conf
+  when: enable_php
+
+- name: Install virtualhost
+  template: 
+    src: virtualhost.conf.j2
+    dest: /etc/nginx/conf.d/{{hostname}}.conf
+    
+- name: Restart nGinx with new config
+  systemd:
+    name: nginx
+    state: restarted
+    
+- name: Enable nGinx on boot
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+
+- name: Enable PHP-FPM on boot
+  systemd:
+    name: php-fpm
+    enabled: yes
+    state: started
+  when: enable_php

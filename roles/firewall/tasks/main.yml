@@ -1,0 +1,25 @@
+## YAML Template.
+---
+- name: Install firewall
+  yum:
+     name: firewalld
+     state: latest
+     
+- name: Enable HTTPS
+  firewalld:
+    service: https
+    permanent: true
+    state: enabled
+- name: Enable HTTP
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+- name: Enable SSH
+  firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+    
+- name: Reload config
+  command: firewall-cmd --reload

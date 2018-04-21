@@ -1,0 +1,98 @@
+# For more information on configuration, see:
+#   * Official English Documentation: http://nginx.org/en/docs/
+#   * Official Russian Documentation: http://nginx.org/ru/docs/
+
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/nginx/README.fedora.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+    multi_accept on;
+    use epoll;
+}
+
+http {
+
+    charset utf-8;
+    server_tokens       off;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for" **$request_time/$upstream_response_time**';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile                    on;
+    tcp_nopush                  on;
+    tcp_nodelay                 on;
+    keepalive_timeout           5;
+    types_hash_max_size         2048;
+    keepalive_requests          100000;
+    reset_timedout_connection   on;
+    send_timeout                15;
+    client_body_timeout         10;
+    client_max_body_size        50M;
+
+    gzip                        on;
+    gzip_static                 on;
+    gzip_http_version           1.1;
+    gzip_comp_level             6;
+    gzip_min_length             128;
+    gzip_vary                   on;
+    gzip_proxied                any;
+    gzip_buffers                16 8k;
+    gzip_types
+        application/atom+xml
+        application/javascript
+        application/json
+        application/rss+xml
+        application/vnd.ms-fontobject
+        application/x-font-ttf
+        application/x-web-app-manifest+json
+        application/xhtml+xml
+        application/xml
+        font/opentype
+        image/png
+        image/jpeg
+        image/svg+xml
+        image/x-icon
+        text/css
+        text/plain
+        text/javascript
+        text/x-component;
+    gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    fastcgi_cache_path          /var/nginx/cache_store levels=1:2 keys_zone=TCC:512m max_size=64m inactive=10m;
+    fastcgi_cache_key           "$scheme$request_method$host$request_uri$http_cookie";
+    fastcgi_cache_valid         6h;
+    fastcgi_cache               TCC;
+    fastcgi_cache_lock          on;
+    fastcgi_cache_use_stale     error timeout invalid_header updating http_500;
+    fastcgi_ignore_headers      Cache-Control Expires Set-Cookie;
+    #fastcgi_buffering          off;
+    #fastcgi_request_buffering  off;
+    fastcgi_buffers             8 16k;
+
+    server_names_hash_bucket_size 100;
+    add_header X-Cache          $upstream_cache_status always;
+
+    map $host$request_uri $no_cache {
+        default 0;
+    }
+
+    fastcgi_no_cache    $no_cache;
+    fastcgi_cache_bypass $no_cache;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+}
