@@ -11,9 +11,16 @@
     centos_version: 7
     enable_php: true
     enable_ssl: false
+    enable_php_myadmin: false
+    mariadb_version: 5.3
+    env_db_username: ""
+    env_db_password: ""
+    env_db_hostname: ""
+    env_db_database: ""
 
   roles:
     - common
     - firewall
     - webserver  
+    - os-hardening
     

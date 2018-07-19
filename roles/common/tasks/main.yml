@@ -1,15 +1,5 @@
 ## YAML Template.
 ---
-- name: Set kernel options
-  template: src=sysctl.conf.j2 dest=/etc/sysctl.conf
-  
-- name: Load kernel options 
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: 0
-    sysctl_set: yes
-    reload: yes
-
 - name: Disable SELinux
   selinux:
     state: disabled

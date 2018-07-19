@@ -1,0 +1,101 @@
+---
+- name: Install AIDE
+  yum:
+    name: aide
+    state: latest
+    
+- name: Build AIDE database
+  command: /usr/sbin/aide --init
+  
+- name: Copy and use AIDE database
+  copy:
+    remote_src: true
+    src: /var/lib/aide/aide.db.new.gz
+    dest: /var/lib/aide/aide.db.gz
+    
+- name: Add cronjob at 04:30
+  cron:
+    minute: "30"
+    hour: "05"
+    user: root
+    job: "/usr/sbin/aide --check >> /etc/crontab 2>&1"
+
+- name: Set kernel options
+  template: src=sysctl.conf.j2 dest=/etc/sysctl.conf
+  
+- name: Load kernel options 
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes    
+
+- name: Ensure rsyslog is installed
+  yum:
+    name: rsyslog
+    state: latest
+
+- name: Ensure rsyslog starts on boot
+  systemd:
+    name: rsyslog
+    enabled: yes
+    state: started
+    
+- name: Disable USB storage
+  command: echo "install usb-storage /bin/false" > /etc/modprobe.d/usb-storage.conf
+
+- name: Disable empty password login
+  command: sed -i 's/\<nullok\>//g' /etc/pam.d/system-auth
+  
+- name: Enforce root in single user mode
+  lineinfile:
+    path: /etc/sysconfig/init
+    line: 'SINGLE=/sbin/sulogin'
+  
+- name: Disable DCCP
+  lineinfile:
+    path: /etc/modprobe.d/dccp.conf
+    line: 'install dccp /bin/false'
+- name: Disable SCTP
+  lineinfile:
+    path: /etc/modprobe.d/sctp.conf
+    line: 'install sctp /bin/false'
+- name: Disable RDS
+  lineinfile:
+    path: /etc/modprobe.d/rds.conf
+    line: 'install rds /bin/false'
+- name: Disable TIPC
+  lineinfile:
+    path: /etc/modprobe.d/tipc.conf
+    line: 'install tipc /bin/false'
+    
+- name: Ensure SSH2 protocol
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'Protocol 2'
+    regexp: '^#?Protocol'
+
+- name: Disable support for .rhosts files
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'IgnoreRhosts yes'
+    regexp: '^#?IgnoreRhosts'
+    
+- name: Dont permit empty passwords
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'PermitEmptyPasswords no'
+    regexp: '^#?PermitEmptyPasswords'
+
+- name: Dont allow user environment options
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'PermitUserEnvironment no'
+    regexp: '^#?PermitUserEnvironment'    
+    
+- name: Only allow strong ciphers
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,aes192-cbc,aes256-cbc'
+    regexp: '^#?Ciphers'    

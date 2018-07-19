@@ -24,7 +24,7 @@ server {
     {
         access_log on;
     }
-    location ~ ^/(google07fce8f85b7b5910.html)
+    location ~ ^/(google*.html)
     {
         access_log on;
     }
@@ -85,30 +85,31 @@ server {
     }
 }
 
+{% if enable_ssl %}
 server {
   
-        {% if enable_ssl %}
-          listen       443 ssl default_server http2;
-        {% else %}
-          listen 80;
-        {% endif %}
+        listen 443 ssl default_server http2;
         
         server_name  {{hostname}};
 
         include /etc/nginx/extra-security.conf;
 
-        {% if enable_ssl %}
-          include /etc/nginx/ssl_params.conf;
-          ssl_certificate /etc/nginx/ssl/{{ssl_certificate}};
-          ssl_trusted_certificate /etc/nginx/ssl/{{ssl_trusted_certificate}};
-          ssl_certificate_key /etc/nginx/ssl/{{ssl_certificate_key}};
-        {% endif %}
+        include /etc/nginx/ssl_params.conf;
+
+        ssl_certificate /etc/nginx/ssl/{{ssl_certificate}};
+        ssl_trusted_certificate /etc/nginx/ssl/{{ssl_trusted_certificate}};
+        ssl_certificate_key /etc/nginx/ssl/{{ssl_certificate_key}};
 
         access_log      /var/log/{{hostname}}.access.log;
         error_log       /var/log/{{hostname}}.error_log;
 
         root /home/domains/{{hostname}}/www;
         index index.php;
+
+        {% if enable_php_myadmin %}
+          include /etc/nginx/php-myadmin.conf;
+        {% endif %}
+
 
         #error_page  404              /404.html;
 
@@ -131,7 +132,7 @@ server {
 
         {% if enable_php %}
         location ~ \.php$ {
-                fastcgi_intercept_errors        on;
+                fastcgi_intercept_errors        off;
                 try_files                       $uri /index.php =404;
                 fastcgi_split_path_info         ^(.+\.php)(.*)$;
                 fastcgi_pass                    php-fpm-prod;
@@ -159,3 +160,4 @@ server {
             deny all;
         }
 }
+{% endif %}

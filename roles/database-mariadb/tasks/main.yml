@@ -1,0 +1,8 @@
+- name: Install MariaDB server REPO
+  yum_repository:
+    name: "MariaDB {{mariadb_version}}"
+    description: MariaDB repository
+    baseurl: http://yum.mariadb.org/$releasever/centos$releasever-$basearch
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+    enabled: yes

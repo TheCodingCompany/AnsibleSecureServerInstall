@@ -1,4 +1,3 @@
-## YAML Template.
 ---
 - name: Install nGinx
   yum:
@@ -28,9 +27,19 @@
 - name: SSL parameters
   template: src=ssl_params.conf.j2 dest=/etc/nginx/ssl_params.conf
 
+- name: PHP MyAdmin config
+  template: src=php-myadmin.j2 dest=/etc/nginx/php-myadmin.conf
+  when: enable_php_myadmin
+
+- name: Install PHP-MyAdmin
+  yum:
+    name: ["phpMyAdmin"]
+    state: latest
+  when: enable_php_myadmin  
+
 - name: Install PHP-FPM
   yum:
-    name: ["php-common", "php-fpm", "php-mcrypt", "php-pdo"]
+    name: ["php-common", "php-fpm", "php-mcrypt", "php-pdo", "php", "php-mysql"]
     state: latest
   when: enable_php  
 

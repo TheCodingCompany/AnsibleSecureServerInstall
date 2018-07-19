@@ -1,0 +1,16 @@
+location /pma {
+    root /usr/share/;
+    index index.php index.html index.htm;
+    location ~ ^/pma/(.+\.php)$ {
+            try_files $uri =404;
+            root /usr/share/;
+            fastcgi_intercept_errors off;
+            fastcgi_pass php-fpm-prod;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include /etc/nginx/fastcgi_params;
+    }
+    location ~* ^/pma/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+            root /usr/share/;
+    }
+}

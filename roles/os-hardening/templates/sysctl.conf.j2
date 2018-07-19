@@ -13,12 +13,23 @@ kernel.sysrq = 0
 
 # Controls source route verification
 net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.all.rp_filter = 1
+
+net.ipv4.tcp_timestamps = 0
+
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+#Buffer overflow protection
+kernel.exec-shield = 1
+kernel.randomize_va_space = 2
 
 # Do not accept source routing
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv4.conf.all.log_martians = 1
 net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
 net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
 net.ipv4.conf.default.accept_source_route = 0
 net.ipv4.conf.default.log_martians = 1
 net.ipv4.ip_local_port_range = 1024 65535
@@ -26,6 +37,7 @@ net.ipv4.tcp_tw_recycle = 1
 net.ipv4.tcp_tw_reuse = 1
 net.core.rmem_max = 16777216
 net.core.wmem_max = 16777216
+net.ipv4.icmp_ignore_bogus_error_responses = 1
 
 # Controls the System Request debugging functionality of the kernel
 kernel.sysrq = 0
