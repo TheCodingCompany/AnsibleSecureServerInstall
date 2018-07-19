@@ -1,11 +1,18 @@
 Ansible Playbook
 
-CentOS strong secure nGinx server setup with optional PHP-FPM and SSL preconfigured
+CentOS strong secure nGinx server setup with optional PHP-FPM and SSL preconfigured as well as PHPMyAdmin
 
 Are you in need server support, managed server or security consultancy? 
 
 https://www.thecodingcompany.se
 
+#Ansible playbook roles
+
+MariaDB
+Webserver (phpMyAdmin optional)
+Firewall
+Common
+OS Hardening
 
 #Usage
 
