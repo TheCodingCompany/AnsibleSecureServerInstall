@@ -44,9 +44,11 @@
     
 - name: Disable USB storage
   command: echo "install usb-storage /bin/false" > /etc/modprobe.d/usb-storage.conf
-
+  
 - name: Disable empty password login
-  command: sed -i 's/\<nullok\>//g' /etc/pam.d/system-auth
+  replace:
+    path: /etc/pam.d/system-auth
+    regexp: "nullok"
   
 - name: Enforce root in single user mode
   lineinfile:
@@ -57,18 +59,25 @@
   lineinfile:
     path: /etc/modprobe.d/dccp.conf
     line: 'install dccp /bin/false'
+    create: yes
+    
 - name: Disable SCTP
   lineinfile:
     path: /etc/modprobe.d/sctp.conf
     line: 'install sctp /bin/false'
+    create: yes
+    
 - name: Disable RDS
   lineinfile:
     path: /etc/modprobe.d/rds.conf
     line: 'install rds /bin/false'
+    create: yes
+    
 - name: Disable TIPC
   lineinfile:
     path: /etc/modprobe.d/tipc.conf
     line: 'install tipc /bin/false'
+    create: yes
     
 - name: Ensure SSH2 protocol
   lineinfile:
@@ -81,6 +90,12 @@
     path: /etc/ssh/sshd_config
     line: 'IgnoreRhosts yes'
     regexp: '^#?IgnoreRhosts'
+
+- name: Disable password login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'PasswordAuthentication no'
+    regexp: '^#?PasswordAuthentication'
     
 - name: Dont permit empty passwords
   lineinfile:
@@ -99,3 +114,8 @@
     path: /etc/ssh/sshd_config
     line: 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,aes192-cbc,aes256-cbc'
     regexp: '^#?Ciphers'    
+    
+- name: Restart SSH deamon with new config
+  systemd:
+    name: sshd
+    state: restarted
