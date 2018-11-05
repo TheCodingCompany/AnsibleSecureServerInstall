@@ -16,6 +16,7 @@
     
 - name: Add cronjob at 04:30
   cron:
+    name: "AIDE check"
     minute: "30"
     hour: "05"
     user: root
