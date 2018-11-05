@@ -12,6 +12,7 @@
     remote_src: true
     src: /var/lib/aide/aide.db.new.gz
     dest: /var/lib/aide/aide.db.gz
+    force: no
     
 - name: Add cronjob at 04:30
   cron:
@@ -19,6 +20,7 @@
     hour: "05"
     user: root
     job: "/usr/sbin/aide --check >> /etc/crontab 2>&1"
+    state: present
 
 - name: Set kernel options
   template: src=sysctl.conf.j2 dest=/etc/sysctl.conf
